@@ -25,11 +25,7 @@ namespace Project
 
         private void button1_Click(object sender, EventArgs e)
         {
-            
-            generateMap();
-            shuffle();
-            showRandomNumber();
-            display();
+            startGame();                     
         }
         private void button2_Click(object sender, EventArgs e)
         {
@@ -65,6 +61,14 @@ namespace Project
             }
         }
 
+        public void startGame()
+        {
+            generateMap();
+            shuffle();
+            showRandomNumber();
+            display();
+        }
+
         public void display()
         {
             for (int i = 0; i < 9; i++)
@@ -85,6 +89,7 @@ namespace Project
                     cells[i, j].X = i;
                     cells[i, j].Y = j;
                     cells[i, j].KeyPress += setNumber;
+                    //Testing
                     cells[i, j].Text = Convert.ToString(cells[i, j].Value);
                     panel1.Controls.Add(cells[i, j]);                   
                 }
@@ -125,7 +130,7 @@ namespace Project
 
         public void showRandomNumber()
         {
-            for(int i = 0; i < 60; i++)
+            for(int i = 0; i < 80; i++)
             {
                 x = random.Next(9);
                 y = random.Next(9);
