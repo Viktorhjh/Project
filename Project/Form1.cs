@@ -12,58 +12,64 @@ namespace Project
 {
     public partial class Form1 : Form
     {
-        int x, y, size = 50;
+        int x, y, size = 50, difficult = 60;
         Random random = new Random();
         Cell[,] cells = new Cell[9, 9];
         bool win = false;
-        
+
 
         public Form1()
         {
-            InitializeComponent();
-        }      
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            startGame();                     
+            InitializeComponent();
+            generateMap();
         }
-        private void button2_Click(object sender, EventArgs e)
+        private void startToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            startGame();
+        }
+
+        private void checkToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            bool error = false;
             win = true;
             for (int i = 0; i < 9; i++)
             {
-                for(int j = 0; j < 9; j++)
-                 {                   
+                for (int j = 0; j < 9; j++)
+                {
                     try
                     {
+                        Convert.ToInt32(cells[i, j].Text);
                         if (cells[i, j].Value != Convert.ToInt32(cells[i, j].Text))
                         {
-                            cells[i, j].BackColor = Color.Red;
-                            MessageBox.Show($"Error in: row {i+1} col {j+1}");
-                            win = false;                           
-                        }
-                        else
-                        {
-                            cells[i, j].BackColor = SystemColors.Window;
+                            MessageBox.Show($"Error in: row {i + 1} col {j + 1}");
+                            win = false;
+                            error = true;
+                            break;
                         }
                     }
                     catch
-                    {                       
+                    {
                         win = false;
+                        error = true;
+                        MessageBox.Show($"Empty cell in row {i + 1} col {j + 1}");
+                        break;
                     }
-                                      
+
                 }
+                if (error)
+                    break;
             }
 
             if (win)
             {
                 MessageBox.Show("Win!");
             }
-        }
+        }        
 
         public void startGame()
         {
-            generateMap();
+            clearMap();
             shuffle();
             showRandomNumber();
             display();
@@ -76,21 +82,19 @@ namespace Project
                 for (int j = 0; j < 9; j++)
                 {
                     
-                    cells[i, j].Font = new Font(SystemFonts.DefaultFont.FontFamily, 20);
-                    cells[i, j].Size = new Size(size, size);
-
-                    if (!cells[i, j].Locked)
-                    {
-                        cells[i, j].ForeColor = SystemColors.ControlDarkDark;                        
-                    }                   
-
+                    cells[i, j].Font = new Font(SystemFonts.DefaultFont.FontFamily, 20);                    
+                    cells[i, j].Size = new Size(size, size);          
+                    
                     cells[i, j].BackColor = SystemColors.Window;
+
+                    cells[i, j].BackColor = ((i / 3) + (j / 3)) % 2 == 0 ? SystemColors.Control : Color.LightGray;
+
                     cells[i, j].Location = new Point(i * size, j * size);
                     cells[i, j].X = i;
                     cells[i, j].Y = j;
                     cells[i, j].KeyPress += setNumber;
                     //Testing
-                    cells[i, j].Text = Convert.ToString(cells[i, j].Value);
+                    //cells[i, j].Text = Convert.ToString(cells[i, j].Value);
                     panel1.Controls.Add(cells[i, j]);                   
                 }
             }
@@ -99,7 +103,7 @@ namespace Project
         private void setNumber(object sender, KeyPressEventArgs e)
         {
             Cell cell = sender as Cell;
-            int value;
+            int value;          
 
             if (!cell.Locked)
             {
@@ -121,23 +125,40 @@ namespace Project
             for(int i = 0; i < 9; i++)
             {
                 for(int j = 0; j < 9; j++)
-                {
+                {                    
                     cells[i, j] = new Cell();
-                    cells[i, j].Value = (i * 3 + i / 3 + j) % 9 + 1;                    
+                    setCellsNumbers(i, j);
                 }
             }
         }
 
-        public void showRandomNumber()
+        public void setCellsNumbers(int i, int j)
         {
-            for(int i = 0; i < 80; i++)
+            cells[i, j].Value = (i * 3 + i / 3 + j) % 9 + 1;
+        }
+
+        public void showRandomNumber()
+        {            
+            for (int i = 0; i < difficult; i++)
             {
                 x = random.Next(9);
                 y = random.Next(9);
                 cells[x, y].Text = Convert.ToString(cells[x, y].Value);
-                cells[x, y].Locked = true;
+                cells[x, y].Locked = true;                
             }
         }       
+
+        public void clearMap()
+        {
+            for (int i = 0; i < 9; i++)
+            {
+                for (int j = 0; j < 9; j++)
+                {
+                    cells[i, j].Text = "";
+                    cells[i, j].Locked = false;
+                }
+            }
+        }
 
         //Shuffle
         public void shuffle()
@@ -187,7 +208,43 @@ namespace Project
                 cells[line1, i].Value = cells[line2, i].Value;
                 cells[line2, i].Value = cur;
             }
-        }      
+        }
+
+        private void easyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            difficult = 60;
+            easyToolStripMenuItem.Checked = true;
+            normalToolStripMenuItem.Checked = false;
+            hardToolStripMenuItem.Checked = false;
+        }
+
+        private void normalToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            difficult = 40;
+            easyToolStripMenuItem.Checked = false;
+            normalToolStripMenuItem.Checked = true;
+            hardToolStripMenuItem.Checked = false;
+        }
+
+        private void hardToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            difficult = 20;
+            easyToolStripMenuItem.Checked = false;
+            normalToolStripMenuItem.Checked = false;
+            hardToolStripMenuItem.Checked = true;
+        }
+
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void helpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show(@"is a logic-based, combinatorial number-placement puzzle. In classic Sudoku, the objective is to fill a 9 × 9 grid with digits so that each column, each row, and each of the nine 3 × 3 subgrids that compose the grid (also called ""boxes"", ""blocks"", or ""regions"") contain all of the digits from 1 to 9. The puzzle setter provides a partially completed grid, which for a well-posed puzzle has a single solution.", "Help");
+        }
+
+       
 
         public void shuffleBlocksInColumn()
         {        
